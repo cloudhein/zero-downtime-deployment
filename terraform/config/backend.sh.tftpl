@@ -13,6 +13,6 @@ systemctl enable docker
 
 sudo usermod -aG docker $USER
 
-docker pull ${docker_image}
+sudo docker pull ${docker_image}
 
-docker run -d --name backend-${run_number} -p 3000:3000 ${docker_image} 
+sudo docker run -d --name backend-${run_number} -p 3000:3000 ${docker_image} 
