@@ -42,7 +42,7 @@ resource "aws_lb_target_group" "frontend_tg" {
     #protocol            = "HTTP"
     healthy_threshold   = 2
     unhealthy_threshold = 10
-    timeout             = 30 # unhealthy threshold interval
+    timeout             = 20 # unhealthy threshold interval
     matcher             = "200"
   }
 

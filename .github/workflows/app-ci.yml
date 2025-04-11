@@ -160,7 +160,7 @@ jobs:
           context: ./react-frontend/
           file: ./react-frontend//Dockerfile
           push: true
-          tags: docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend${{ needs.repo-meta.outputs.image_name }}
+          tags: docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend:${{ needs.repo-meta.outputs.image_name }}
   
   deploy-app:
     runs-on: ubuntu-latest
