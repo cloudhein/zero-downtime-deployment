@@ -15,4 +15,6 @@ sudo usermod -aG docker $USER
 
 sudo docker pull ${docker_image}
 
-sudo docker run -d --name frontend-${run_number} -p 80:80 ${docker_image} 
+#sudo docker run -d --name frontend-${run_number} -p 80:80 ${docker_image} 
+
+sudo docker run -d --name new --network host --user root ${docker_image}
