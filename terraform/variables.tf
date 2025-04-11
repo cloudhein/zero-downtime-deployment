@@ -93,6 +93,11 @@ variable "run_number" {
   type        = string
 }
 
+variable "docker_image" {
+  description = "docker image name"
+  type        = string
+}
+
 ##### frontend asg variables ######
 
 variable "asg_frontend_min_size" {

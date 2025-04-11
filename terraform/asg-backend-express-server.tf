@@ -36,7 +36,8 @@ resource "aws_launch_template" "asg-backend-app-template" {
   }
 
   user_data = base64encode(templatefile("${path.module}/config/backend.sh.tftpl", {
-    run_number = var.run_number
+    run_number   = var.run_number
+    docker_image = var.docker_image
   }))
 
   block_device_mappings {

@@ -1,27 +1,16 @@
 #!/bin/bash
+apt-get update -y
 
-sudo apt update -y
-sudo apt install curl build-essential git -y
+apt-get install -y apt-transport-https ca-certificates curl software-properties-common
 
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash -
-sudo apt-get install -y nodejs
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+apt-get update -y
+apt-get install -y docker-ce
 
-node -v
-npm -v
+systemctl start docker
+systemctl enable docker
 
-# Add github run number to trigger the terraform for awareness of business logic changes
-echo "Deploying application with run number: ${run_number}"
-# echo "Deploying application with run number"
+docker pull ${docker_image}
 
-cd /home/ubuntu
-git clone https://github.com/cloudhein/zero-downtime-deployment.git
-sudo chown -R $(whoami):$(whoami) /home/ubuntu/zero-downtime-deployment/express-backend
-cd /home/ubuntu/zero-downtime-deployment/express-backend
-
-
-# install dependencies
-sudo npm install 
-
-# start the server
-nohup sudo node index.js &
-
+docker run -d --name backend-${run_number} -p 3000:3000 ${docker_image} 
