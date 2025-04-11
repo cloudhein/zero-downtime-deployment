@@ -225,10 +225,10 @@ jobs:
         run: |
           terraform fmt
           terraform validate
-          terraform plan -var "run_number=${{ github.run_number }}"
+          terraform plan -var "run_number=${{ github.run_number }}" -var "docker_image=docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }}"
  
       - name: Terraform Destroy
         working-directory: ./terraform
         run: |
-          terraform destroy -auto-approve -var "run_number=${{ github.run_number }}"
+          terraform destroy -auto-approve -var "run_number=${{ github.run_number }}" -var "docker_image=docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }}"
         
