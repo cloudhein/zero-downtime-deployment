@@ -14,45 +14,6 @@ resource "aws_lb" "app-lb" {
   }
 }
 
-# Frontend listener
-resource "aws_lb_listener" "alb__frontend_listener" {
-  load_balancer_arn = aws_lb.app-lb.arn
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.frontend_tg.arn
-  }
-}
-
-# Frontend target group
-resource "aws_lb_target_group" "frontend_tg" {
-  name        = "frontend-target-group"
-  port        = 80
-  protocol    = "HTTP"
-  target_type = "instance"
-  vpc_id      = data.aws_vpc.default_vpc.id
-
-  health_check {
-    enabled  = true
-    interval = 25 # healthy threshold interval
-    path     = "/"
-    port     = "80"
-    #protocol            = "HTTP"
-    healthy_threshold   = 2
-    unhealthy_threshold = 10
-    timeout             = 20 # unhealthy threshold interval
-    matcher             = "200"
-  }
-
-  deregistration_delay = 10
-
-  tags = {
-    Name = "frontend-target-group"
-  }
-}
-
 # Backend listener
 resource "aws_lb_listener" "alb__backend_listener" {
   load_balancer_arn = aws_lb.app-lb.arn
@@ -101,15 +62,6 @@ resource "aws_security_group" "alb_sg" {
   tags = {
     Name = "alb_sg"
   }
-}
-
-resource "aws_vpc_security_group_ingress_rule" "allow_http_rules" {
-  security_group_id = aws_security_group.alb_sg.id
-
-  cidr_ipv4   = local.anywhere
-  from_port   = local.http_port
-  ip_protocol = local.tcp_protocol
-  to_port     = local.http_port
 }
 
 resource "aws_vpc_security_group_ingress_rule" "allow_backend_ports" {

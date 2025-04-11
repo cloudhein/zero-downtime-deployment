@@ -32,22 +32,19 @@ resource "aws_launch_template" "asg-frontend-app-template" {
 
   network_interfaces {
     associate_public_ip_address = true
-    security_groups             = [aws_security_group.frontend_sg.id, aws_security_group.ssh_sg.id]
+    security_groups             = [aws_security_group.frontend_sg.id, aws_security_group.frontend-ssh-sg.id]
   }
 
   user_data = base64encode(templatefile("${path.module}/config/frontend.sh.tftpl", {
-    backend_ip = aws_lb.app-lb.dns_name
+    run_number   = var.run_number
+    docker_image = var.docker_image
   }))
-
-  depends_on = [
-    aws_autoscaling_group.asg-backend-app
-  ]
 
   block_device_mappings {
     device_name = data.aws_ami.ubuntu.root_device_name # if ami root device name is not defined, your instance will attahced with 2 ebs volume
 
     ebs {
-      volume_size = 20
+      volume_size = 8
       volume_type = "gp3"
     }
   }
@@ -133,7 +130,7 @@ resource "aws_autoscaling_policy" "asg-scale-out" {
 #  instance_type = local.frontend_instance_type
 #  vpc_security_group_ids = [
 #    aws_security_group.frontend_sg.id,
-#    aws_security_group.ssh_sg.id
+#    aws_security_group.frontend-ssh-sg.id
 #  ]
 #  subnet_id = element(data.aws_subnets.default_vpc_subnets.ids, count.index) # create instances in different subnets
 #

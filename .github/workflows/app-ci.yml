@@ -127,6 +127,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # if use with uses in github action, working-directory cannot define and must use with context
       - name: Build and push Docker images
         uses: docker/build-push-action@v6.15.0
         with:
@@ -135,37 +136,11 @@ jobs:
           push: true
           tags: docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }}
 
-  containerize-frontend:
-    runs-on: ubuntu-latest
-
-    needs: [format_code,repo-meta]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          registry: docker.io
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v6.15.0
-        with:
-          context: ./react-frontend/
-          file: ./react-frontend//Dockerfile
-          push: true
-          tags: docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend:${{ needs.repo-meta.outputs.image_name }}
-  
+  # deploy backend app
   deploy-app:
     runs-on: ubuntu-latest
  
-    needs: [format_code,containerize-backend,containerize-frontend,repo-meta]
+    needs: [format_code,containerize-backend,repo-meta]
  
     steps:
       - name: Checkout code
@@ -196,7 +171,82 @@ jobs:
         working-directory: ./terraform
         run: |
           terraform apply -auto-approve -var 'run_number=${{ github.run_number }}' -var 'docker_image=docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }}'
+
+      - name: Extract LB DNS output
+        id: extract_lb
+        working-directory: ./terraform
+        run: |
+          echo "backend_lb_dns_name=$(terraform output -raw backend_lb_dns_name)" >> $GITHUB_OUTPUT
  
+  containerize-frontend:
+    runs-on: ubuntu-latest
+    env:
+      backend_ip: ${{ needs.deploy-app.outputs.backend_lb_dns_name }}
+
+    needs: [format_code,repo-meta,deploy-app]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update .env file with backend LB DNS
+        working-directory: ./react-frontend
+        run: |
+          sudo sed -i "s/^REACT_APP_SERVER_IP=.*$/REACT_APP_SERVER_IP=${{ env.backend_ip }}/" .env
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: docker.io
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v6.15.0
+        with:
+          context: ./react-frontend/
+          file: ./react-frontend//Dockerfile
+          push: true
+          tags: docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend:${{ needs.repo-meta.outputs.image_name }}
+            
+  deploy-frontend-app:
+    runs-on: ubuntu-latest
+ 
+    needs: [format_code,containerize-backend,containerize-frontend,repo-meta]
+ 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+ 
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+ 
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v3.1.2
+ 
+      - name: Terraform Init
+        working-directory: ./terraform-frontend
+        run: terraform init
+ 
+      - name: Terraform Plan
+        working-directory: ./terraform-frontend
+        run: |
+          terraform fmt
+          terraform validate
+          terraform plan -var 'run_number=${{ github.run_number }}' -var 'docker_image=docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend:${{ needs.repo-meta.outputs.image_name }}'
+ 
+      - name: Run Terraform
+        working-directory: ./terraform-frontend
+        run: |
+          terraform apply -auto-approve -var 'run_number=${{ github.run_number }}' -var 'docker_image=docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend:${{ needs.repo-meta.outputs.image_name }}'
+
   destroy:
     runs-on: ubuntu-latest
     needs: [deploy-app,containerize-backend,containerize-frontend,repo-meta]
