@@ -12,6 +12,28 @@ env:
   AWS_REGION: ap-northeast-1
 
 jobs:
+  repo-meta:
+    runs-on: ubuntu-latest
+    outputs:
+      image_name: ${{ steps.container-image.outputs.IMAGE_NAME }}
+      repo_name: ${{ steps.repository-name.outputs.REPO_NAME }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Extract repository's name
+        id: repository-name
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d '/' -f 2)
+          echo "REPO_NAME=${REPO_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Create image name
+        id: container-image
+        run: |
+          BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/\//_/g')
+          IMAGE_NAME=${BRANCH_NAME}_${{ github.sha }}
+          echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_OUTPUT
+
   unit-tests:
     runs-on: ubuntu-latest
 
@@ -89,7 +111,7 @@ jobs:
   containerize-backend:
     runs-on: ubuntu-latest
 
-    needs: format_code
+    needs: [format_code,repo-meta]
 
     steps:
       - name: Checkout code
@@ -111,12 +133,12 @@ jobs:
           context: ./express-backend
           file: ./express-backend/Dockerfile
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/express-backend:v${{ github.run_number }}
+          tags: docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }}
 
   containerize-frontend:
     runs-on: ubuntu-latest
 
-    needs: format_code
+    needs: [format_code,repo-meta]
 
     steps:
       - name: Checkout code
@@ -138,7 +160,7 @@ jobs:
           context: ./react-frontend/
           file: ./react-frontend//Dockerfile
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/react-frontend:v${{ github.run_number }}
+          tags: docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend${{ needs.repo-meta.outputs.image_name }}
   
             #  deploy-app:
             #    runs-on: ubuntu-latest
