@@ -247,9 +247,9 @@ jobs:
         run: |
           terraform apply -auto-approve -var 'run_number=${{ github.run_number }}' -var 'docker_image=docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend:${{ needs.repo-meta.outputs.image_name }}'
 
-  destroy-frontend:
+  destroy-backend:
     runs-on: ubuntu-latest
-    needs: [deploy-frontend-app,containerize-frontend,repo-meta]
+    needs: [deploy-app,containerize-backend,repo-meta]
     environment: destroy-infrastructure # Ties this job to the environment with approval
     if: github.event_name == 'workflow_dispatch' # Only runs on manual trigger
     steps:
@@ -275,10 +275,45 @@ jobs:
         run: |
           terraform fmt
           terraform validate
-          terraform plan -var "run_number=${{ github.run_number }}" -var 'docker_image=docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend:${{ needs.repo-meta.outputs.image_name }}'
+          terraform plan -var "run_number=${{ github.run_number }}" -var 'docker_image=docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }}'
  
       - name: Terraform Destroy
         working-directory: ./terraform
+        run: |
+          terraform destroy -auto-approve -var "run_number=${{ github.run_number }}" -var 'docker_image=docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }}'
+        
+  destroy-frontend:
+    runs-on: ubuntu-latest
+    needs: [deploy-frontend-app,containerize-frontend,repo-meta]
+    environment: destroy-infrastructure # Ties this job to the environment with approval
+    if: github.event_name == 'workflow_dispatch' # Only runs on manual trigger
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+ 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+ 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+ 
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform-frontend
+ 
+      - name: Terraform Plan
+        working-directory: ./terraform-frontend
+        run: |
+          terraform fmt
+          terraform validate
+          terraform plan -var "run_number=${{ github.run_number }}" -var 'docker_image=docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend:${{ needs.repo-meta.outputs.image_name }}'
+ 
+      - name: Terraform Destroy
+        working-directory: ./terraform-frontend
         run: |
           terraform destroy -auto-approve -var "run_number=${{ github.run_number }}" -var 'docker_image=docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend:${{ needs.repo-meta.outputs.image_name }}'
         
