@@ -139,6 +139,8 @@ jobs:
   # deploy backend app
   deploy-app:
     runs-on: ubuntu-latest
+    outputs:
+      backend_lb_dns_name: ${{ steps.extract_lb.outputs.backend_lb_dns_name }}
  
     needs: [format_code,containerize-backend,repo-meta]
  
@@ -176,7 +178,8 @@ jobs:
         id: extract_lb
         working-directory: ./terraform
         run: |
-          echo "backend_lb_dns_name=$(terraform output -raw backend_lb_dns_name)" >> $GITHUB_OUTPUT
+          dns=$(terraform output -raw backend_lb_dns_name)
+          echo "backend_lb_dns_name=${dns}" >> $GITHUB_OUTPUT
  
   containerize-frontend:
     runs-on: ubuntu-latest
