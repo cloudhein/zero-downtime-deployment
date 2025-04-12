@@ -1,6 +1,6 @@
 resource "aws_lb" "app-lb" {
   name               = "app-lb"
-  internal           = true
+  internal           = false
   ip_address_type    = "ipv4"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]

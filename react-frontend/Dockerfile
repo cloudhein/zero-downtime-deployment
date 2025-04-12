@@ -1,22 +1,25 @@
-FROM node:22-alpine AS builder
+FROM node:20-alpine AS builder
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
 COPY package*.json ./
+
 RUN npm ci --omit=dev
 
 COPY . .
 
-RUN npm run build
+FROM node:20-alpine AS production
 
-# ---------- NGINX Stage ----------
-FROM nginx:stable-alpine
+WORKDIR /usr/src/myapp
 
-# Copy built React app from builder stage to NGINX public directory
-COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /usr/src/app/ /usr/src/myapp/
 
-# Expose port 80
+RUN addgroup -S reactgroup && adduser -S reactuser -G reactgroup
+
+RUN chown -R reactuser:reactgroup /usr/src/myapp
+
+USER reactuser
+
 EXPOSE 80
 
-# Start NGINX in foreground
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "start", "&"]
