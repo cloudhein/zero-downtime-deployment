@@ -6,7 +6,7 @@ const port = 3000;
 app.use(cors());
 
 app.get("/api/v1/hello", (req, res) => {
-  res.json({ message: "hello" });
+  res.json({ message: "bonjour" });
 });
 
 const server = app.listen(port, () => {
