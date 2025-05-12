@@ -142,3 +142,31 @@ jobs:
           else
             echo "Nothing to commit."
           fi
+  
+  containerize-backend:
+    runs-on: ubuntu-latest
+
+    needs: [format_code,repo-meta]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to JFrog
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.JFROG_USERNAME }}
+          password: ${{ secrets.JFROG_TOKEN }}
+          registry: trialem2mr4.jfrog.io
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # if use with uses in github action, working-directory cannot define and must use with context
+      - name: Build and push Docker images to JFrog
+        uses: docker/build-push-action@v6.15.0
+        with:
+          context: ./express-backend
+          file: ./express-backend/Dockerfile
+          push: true
+          tags: trialem2mr4.jfrog.io/expressjs-backend/${{ needs.repo-meta.outputs.image_name }}
