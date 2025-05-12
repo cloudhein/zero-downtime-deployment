@@ -169,4 +169,4 @@ jobs:
           context: ./express-backend
           file: ./express-backend/Dockerfile
           push: true
-          tags: trialem2mr4.jfrog.io/expressjs-backend/${{ needs.repo-meta.outputs.image_name }}
+          tags: trialem2mr4.jfrog.io/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}
