@@ -1,10 +1,10 @@
-terraform { 
-  cloud { 
-    
-    organization = "github-action-org" 
+terraform {
+  cloud {
 
-    workspaces { 
-      name = "zero-downtime-workspace" 
-    } 
-  } 
+    organization = "github-action-org"
+
+    workspaces {
+      name = "zero-downtime-workspace"
+    }
+  }
 }
