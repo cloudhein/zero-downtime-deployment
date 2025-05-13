@@ -12,10 +12,11 @@ resource "aws_security_group" "frontend_sg" {
 resource "aws_vpc_security_group_ingress_rule" "allow_frontendapp_rules" {
   security_group_id = aws_security_group.frontend_sg.id
 
-  cidr_ipv4   = local.anywhere
-  from_port   = local.frontendapp_port
-  ip_protocol = local.tcp_protocol
-  to_port     = local.frontendapp_port
+  #cidr_ipv4   = local.anywhere
+  referenced_security_group_id = aws_security_group.frontend-lb_sg.id
+  from_port                    = local.frontendapp_port
+  ip_protocol                  = local.tcp_protocol
+  to_port                      = local.frontendapp_port
 }
 
 resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4_frontend" {
@@ -36,8 +37,11 @@ resource "aws_launch_template" "asg-frontend-app-template" {
   }
 
   user_data = base64encode(templatefile("${path.module}/config/frontend.sh.tftpl", {
-    run_number   = var.run_number
-    docker_image = var.docker_image
+    run_number           = var.run_number
+    docker_image         = var.docker_image
+    JFROG_FRONTEND_TOKEN = var.JFROG_FRONTEND_TOKEN
+    JFROG_USER           = var.JFROG_USER
+    JFROG_REGISTRY       = var.JFROG_REGISTRY
   }))
 
   block_device_mappings {

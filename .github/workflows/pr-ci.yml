@@ -194,24 +194,24 @@ jobs:
         uses: hashicorp/setup-terraform@v3.1.2
  
       - name: Terraform Init
-        working-directory: ./terraform
+        working-directory: ./deploy-backend
         run: terraform init
  
       - name: Terraform Plan
-        working-directory: ./terraform
+        working-directory: ./deploy-backend
         run: |
           terraform fmt
           terraform validate
           terraform plan -var 'JFROG_REGISTRY=${{ vars.JFROG_REGISTRY }}' -var 'JFROG_USER=${{ vars.JFROG_USERNAME }}' -var 'JFROG_TOKEN=${{ secrets.JFROG_TOKEN }}' -var 'run_number=${{ github.run_number }}' -var 'docker_image=${{ vars.JFROG_REGISTRY }}/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}'
  
       - name: Deploy backend app
-        working-directory: ./terraform
+        working-directory: ./deploy-backend
         run: |
           terraform apply -auto-approve -var 'JFROG_REGISTRY=${{ vars.JFROG_REGISTRY }}' -var 'JFROG_USER=${{ vars.JFROG_USERNAME }}' -var 'JFROG_TOKEN=${{ secrets.JFROG_TOKEN }}' -var 'run_number=${{ github.run_number }}' -var 'docker_image=${{ vars.JFROG_REGISTRY }}/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}'
 
       - name: Extract LB DNS output
         id: extract_lb
-        working-directory: ./terraform
+        working-directory: ./deploy-backend
         run: |
           dns=$(terraform output -raw backend_lb_dns_name)
           echo "backend_lb_dns_name=${dns}" >> $GITHUB_OUTPUT
@@ -249,3 +249,38 @@ jobs:
           file: ./react-frontend//Dockerfile
           push: true
           tags: ${{ vars.JFROG_REGISTRY }}/react-frontend/react:${{ needs.repo-meta.outputs.image_name }}
+
+  deploy-frontend-app:
+    runs-on: ubuntu-latest
+ 
+    needs: [format_code,containerize-backend,containerize-frontend,repo-meta]
+ 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+ 
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+ 
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v3.1.2
+ 
+      - name: Terraform Init
+        working-directory: ./deploy-frontend
+        run: terraform init
+ 
+      - name: Terraform Plan
+        working-directory: ./deploy-frontend
+        run: |
+          terraform fmt
+          terraform validate
+          terraform plan -var 'JFROG_REGISTRY=${{ vars.JFROG_REGISTRY }}' -var 'JFROG_USER=${{ vars.JFROG_USERNAME }}' -var 'JFROG_FRONTEND_TOKEN=${{ secrets.JFROG_FRONTEND_TOKEN }}' -var 'run_number=${{ github.run_number }}' -var 'docker_image=${{ vars.JFROG_REGISTRY }}/react-frontend/react:${{ needs.repo-meta.outputs.image_name }}'
+ 
+      - name: Deploy frontend app
+        working-directory: ./deploy-frontend
+        run: |
+          terraform apply -auto-approve -var 'JFROG_REGISTRY=${{ vars.JFROG_REGISTRY }}' -var 'JFROG_USER=${{ vars.JFROG_USERNAME }}' -var 'JFROG_FRONTEND_TOKEN=${{ secrets.JFROG_FRONTEND_TOKEN }}' -var 'run_number=${{ github.run_number }}' -var 'docker_image=${{ vars.JFROG_REGISTRY }}/react-frontend/react:${{ needs.repo-meta.outputs.image_name }}'
