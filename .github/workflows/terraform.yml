@@ -30,4 +30,4 @@ jobs:
 
       - name: Deploy backend app
         working-directory: ./terraform
-        run: terraform apply
+        run: terraform apply -auto-approve
