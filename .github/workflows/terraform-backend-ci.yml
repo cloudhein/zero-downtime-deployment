@@ -1,9 +1,12 @@
 name: Integrate with terraform cloud backend test
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - test
+  # pull_request:
+  #   branches:
+  #     - main
 
 jobs:
   deploy-app:
