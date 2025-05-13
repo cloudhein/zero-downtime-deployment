@@ -157,7 +157,7 @@ jobs:
         with:
           username: ${{ vars.JFROG_USERNAME }}
           password: ${{ secrets.JFROG_TOKEN }}
-          registry: trialem2mr4.jfrog.io
+          registry: ${{ vars.JFROG_REGISTRY }}
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -169,7 +169,7 @@ jobs:
           context: ./express-backend
           file: ./express-backend/Dockerfile
           push: true
-          tags: trialem2mr4.jfrog.io/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}
+          tags: ${{ vars.JFROG_REGISTRY }}/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}
 
   # deploy backend app
   deploy-app:
@@ -204,7 +204,7 @@ jobs:
           terraform validate
           terraform plan -var 'JFROG_REGISTRY=${{ vars.JFROG_REGISTRY }}' -var 'JFROG_USER=${{ vars.JFROG_USERNAME }}' -var 'JFROG_TOKEN=${{ secrets.JFROG_TOKEN }}' -var 'run_number=${{ github.run_number }}' -var 'docker_image=${{ vars.JFROG_REGISTRY }}/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}'
  
-      - name: Run Terraform
+      - name: Deploy backend app
         working-directory: ./terraform
         run: |
           terraform apply -auto-approve -var 'JFROG_REGISTRY=${{ vars.JFROG_REGISTRY }}' -var 'JFROG_USER=${{ vars.JFROG_USERNAME }}' -var 'JFROG_TOKEN=${{ secrets.JFROG_TOKEN }}' -var 'run_number=${{ github.run_number }}' -var 'docker_image=${{ vars.JFROG_REGISTRY }}/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}'
@@ -215,3 +215,37 @@ jobs:
         run: |
           dns=$(terraform output -raw backend_lb_dns_name)
           echo "backend_lb_dns_name=${dns}" >> $GITHUB_OUTPUT
+
+  containerize-frontend:
+    runs-on: ubuntu-latest
+    env:
+      backend_ip: ${{ needs.deploy-app.outputs.backend_lb_dns_name }}
+
+    needs: [format_code,repo-meta,deploy-app]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update .env file with backend LB DNS
+        working-directory: ./react-frontend
+        run: |
+          sudo sed -i "s/^REACT_APP_SERVER_IP=.*$/REACT_APP_SERVER_IP=${{ env.backend_ip }}/" .env
+
+      - name: Authenticate to JFrog
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.JFROG_USERNAME }}
+          password: ${{ secrets.JFROG_TOKEN }}
+          registry: ${{ vars.JFROG_REGISTRY }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker images to JFrog Registry
+        uses: docker/build-push-action@v6.15.0
+        with:
+          context: ./react-frontend/
+          file: ./react-frontend//Dockerfile
+          push: true
+          tags: ${{ vars.JFROG_REGISTRY }}/react-frontend/react:${{ needs.repo-meta.outputs.image_name }}
