@@ -80,7 +80,7 @@ variable "JFROG_USER" {
   sensitive   = true
 }
 
-variable "JFROG_FRONTEND_TOKEN " {
+variable "JFROG_FRONTEND_TOKEN" {
   description = "Jfrog token"
   type        = string
   sensitive   = true
