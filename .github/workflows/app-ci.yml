@@ -3,10 +3,10 @@ name: react-app-express-js-ci-cd
 on:
   push:
     branches:
-      - main
+      #- main
       # - develop
-      # - feat/**
-      # - feature/**
+      - feat/**
+      - feature/**
 
   #workflow_dispatch:
 
