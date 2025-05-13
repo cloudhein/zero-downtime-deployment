@@ -36,8 +36,11 @@ resource "aws_launch_template" "asg-backend-app-template" {
   }
 
   user_data = base64encode(templatefile("${path.module}/config/backend.sh.tftpl", {
-    run_number   = var.run_number
-    docker_image = var.docker_image
+    run_number     = var.run_number
+    docker_image   = var.docker_image
+    JFROG_TOKEN    = var.JFROG_TOKEN
+    JFROG_USER     = var.JFROG_USER
+    JFROG_REGISTRY = var.JFROG_REGISTRY
   }))
 
   block_device_mappings {
