@@ -12,10 +12,11 @@ resource "aws_security_group" "backend_sg" {
 resource "aws_vpc_security_group_ingress_rule" "allow_backendapp_rules" {
   security_group_id = aws_security_group.backend_sg.id
 
-  cidr_ipv4   = local.anywhere
-  from_port   = local.backendapp_port
-  ip_protocol = local.tcp_protocol
-  to_port     = local.backendapp_port
+  #cidr_ipv4   = local.anywhere
+  referenced_security_group_id = aws_security_group.alb_sg.id
+  from_port                    = local.backendapp_port
+  ip_protocol                  = local.tcp_protocol
+  to_port                      = local.backendapp_port
 }
 
 resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4_backend" {
