@@ -1,9 +1,9 @@
 name: destroy-develop-infrastructure
 
 on:
-  push:
-    branches:
-      - develop
+  #push:
+  #  branches:
+  #    - develop
   # Manual trigger only
   workflow_dispatch:
 
