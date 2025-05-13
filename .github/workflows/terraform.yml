@@ -1,0 +1,44 @@
+name: test terraform cloud backend
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  #     - develop
+  #     - feat/**
+  #     - feature/**
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # deploy backend app
+  deploy-app:
+    runs-on: ubuntu-latest
+    env:
+      TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
+    #needs: [format_code,containerize-backend,repo-meta]
+ 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+ 
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v3.1.2
+ 
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init
+ 
+      - name: Terraform Plan
+        working-directory: ./terraform
+        run: |
+          terraform fmt
+          terraform validate
+          terraform plan 
+ 
+      - name: Deploy backend app
+        working-directory: ./terraform
+        run: |
+          terraform apply 
