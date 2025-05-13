@@ -67,6 +67,25 @@ variable "docker_image" {
   type        = string
 }
 
+#### Jrog Authentication ####
+variable "JFROG_REGISTRY" {
+  description = "Jfrog registry"
+  type        = string
+  sensitive   = false
+}
+
+variable "JFROG_USER" {
+  description = "Jfrog user"
+  type        = string
+  sensitive   = true
+}
+
+variable "JFROG_TOKEN" {
+  description = "Jfrog token"
+  type        = string
+  sensitive   = true
+}
+
 ##### backend asg variables ######
 
 variable "asg_backend_min_size" {

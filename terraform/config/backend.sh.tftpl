@@ -13,6 +13,9 @@ systemctl enable docker
 
 sudo usermod -aG docker $USER
 
+# authenticate to jfog
+echo "${JFROG_TOKEN}" | docker login -u ${JFROG_USER} ${JFROG_REGISTRY} --password-stdin
+
 sudo docker pull ${docker_image}
 
 sudo docker run -d --name backend-${run_number} -p 3000:3000 ${docker_image} 

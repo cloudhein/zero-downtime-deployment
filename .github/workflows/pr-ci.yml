@@ -170,3 +170,48 @@ jobs:
           file: ./express-backend/Dockerfile
           push: true
           tags: trialem2mr4.jfrog.io/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}
+
+  # deploy backend app
+  deploy-app:
+    runs-on: ubuntu-latest
+    outputs:
+      backend_lb_dns_name: ${{ steps.extract_lb.outputs.backend_lb_dns_name }}
+ 
+    needs: [format_code,containerize-backend,repo-meta]
+ 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+ 
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+ 
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v3.1.2
+ 
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init
+ 
+      - name: Terraform Plan
+        working-directory: ./terraform
+        run: |
+          terraform fmt
+          terraform validate
+          terraform plan -var 'JFROG_REGISTRY=${{ vars.JFROG_REGISTRY }}' -var 'JFROG_USER=${{ vars.JFROG_USERNAME }}' -var 'JFROG_TOKEN=${{ secrets.JFROG_TOKEN }}' -var 'run_number=${{ github.run_number }}' -var 'docker_image=${{ vars.JFROG_REGISTRY }}/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}'
+ 
+      - name: Run Terraform
+        working-directory: ./terraform
+        run: |
+          terraform apply -auto-approve -var 'JFROG_REGISTRY=${{ vars.JFROG_REGISTRY }}' -var 'JFROG_USER=${{ vars.JFROG_USERNAME }}' -var 'JFROG_TOKEN=${{ secrets.JFROG_TOKEN }}' -var 'run_number=${{ github.run_number }}' -var 'docker_image=${{ vars.JFROG_REGISTRY }}/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}'
+
+      - name: Extract LB DNS output
+        id: extract_lb
+        working-directory: ./terraform
+        run: |
+          dns=$(terraform output -raw backend_lb_dns_name)
+          echo "backend_lb_dns_name=${dns}" >> $GITHUB_OUTPUT
