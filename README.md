@@ -1,0 +1,1 @@
+## HA,Fault Tolerance & Zero Downtime Architecture 
