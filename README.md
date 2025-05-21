@@ -1,1 +1,1 @@
-## HA,Fault Tolerance & Zero Downtime Architecture 
+## Automated Deployment of React-Express App using GitHub Actions(HA,Fault Tolerance & Zero Downtime Deployment)
