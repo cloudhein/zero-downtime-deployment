@@ -1,4 +1,4 @@
-# Automated Deployment of React-Express App using GitHub Actions(HA,Fault Tolerance & Zero Downtime Deployment)
+# End-to-End CI/CD Automation for React-Express App with HA, Fault Tolerance, and Zero Downtime Rollouts
 
 ##  CI/CD HLD of the project
 
