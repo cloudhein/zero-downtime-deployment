@@ -3,7 +3,7 @@ name: react-app-express-js-ci-cd
 on:
   push:
     branches:
-      - main
+      - feature/*
       # - develop
       # - feat/**
       # - feature/**
