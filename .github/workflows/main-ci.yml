@@ -284,7 +284,7 @@ jobs:
         with:
           image-ref: docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }}
           scan-type: image
-          severity: 'CRITICAL'
+          severity: 'CRITICAL,HIGH'
           format: 'table'
           exit-code: '0'
           ignore-unfixed: true
