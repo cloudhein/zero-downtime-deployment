@@ -280,18 +280,19 @@ jobs:
         run: docker build -t docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }} ./express-backend
         
       - name: Scan image in a private registry
+        id: trivy-scan
         uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }}
           scan-type: image
           severity: 'CRITICAL,HIGH'
           format: 'table'
-          exit-code: '0'
+          exit-code: '1'
           ignore-unfixed: true
           scanners: 'vuln,secret'
 
       - name: Push Docker images
-        if : success()
+        if: steps.trivy-scan.outcome == 'success'
         uses: docker/build-push-action@v6.15.0
         with:
           context: ./express-backend
