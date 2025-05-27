@@ -189,9 +189,7 @@ jobs:
             -Dsonar.sources=.
             -Dsonar.exclusions=node_modules/**,tests/**
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            # -Dsonar.projectVersion=1.0.${{ github.run_number }}
-            -Dsonar.projectVersion=force-full-${{ github.run_number }}
-
+            -Dsonar.projectVersion=1.0.${{ github.run_number }}
     
       - name: Wait for Quality Gate result
         id: qualitygate
@@ -223,7 +221,8 @@ jobs:
           fi
 
       - name: Create GitHub Issue on Quality Gate Failure
-        if: steps.qualitygate.outputs.quality_gate_status != 'PASSED'
+        if: steps.qualitygate.outputs.quality_gate_status != 'OK'
+
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           REPO: ${{ github.repository }}
