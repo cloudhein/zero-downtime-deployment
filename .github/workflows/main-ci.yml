@@ -189,6 +189,7 @@ jobs:
             -Dsonar.sources=.
             -Dsonar.exclusions=node_modules/**,tests/**
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.projectVersion=1.0.${{ github.run_number }}
 
 
   
