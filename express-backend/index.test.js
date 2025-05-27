@@ -1,23 +1,44 @@
-const request = require("supertest");
-const { app, server } = require("./index");
+const express = require("express");
+const app = express();
+const cors = require("cors");
+const port = 3000;
 
-describe("GET /api/v1/hello", () => {
-  test('should return a JSON response with the message "bonjour"', async () => {
-    const response = await request(app).get("/api/v1/hello").expect(200);
-    expect(response.body.message).toBe("bonjour");
-  });
+// 🚨 Unused variable (code smell)
+const unusedVar = "This is not used";
 
-  test('should not return a JSON response with the message "hi"', async () => {
-    const response = await request(app).get("/api/v1/hello").expect(200);
-    expect(response.body.message).not.toBe("hi");
-  });
+// 🚨 Function declared but never used (code smell)
+function unusedFunction() {
+  console.log("I'm never called!");
+}
 
-  // 🚨 Disabled test (bad practice)
-  test.skip('this test is skipped and not maintained', () => {
-    expect(true).toBe(false);
-  });
+// 🚨 Deprecated API usage (example)
+const fs = require("fs");
+fs.exists("somefile.txt", (exists) => {
+  console.log("Deprecated fs.exists used");
 });
 
-afterAll(() => {
-  server.close();
+app.use(cors());
+
+// 🚨 Hardcoded secret (security hotspot)
+const API_SECRET = "super-secret-api-key-123";
+
+// 🚨 Use of eval (security hotspot)
+const dynamicCode = "2 + 2";
+eval(dynamicCode); // <-- 🔥
+
+app.get("/api/v1/hello", (req, res) => {
+  // 🚨 Duplicate string literals
+  res.json({ message: "bonjour", debug: "bonjour" });
 });
+
+// 🚨 Unhandled promise (bug)
+Promise.resolve("ok").then((val) => {
+  JSON.parse("{ invalid json }"); // 🔥 Will crash but not caught
+});
+
+// 🚨 Console.log in production
+const server = app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
+
+module.exports = { app, server };
