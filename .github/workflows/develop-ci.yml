@@ -185,7 +185,7 @@ jobs:
           projectBaseDir: ./express-backend
           args: >
             -Dsonar.projectKey=react-express-key
-            -Dsonar.organization=react-express-org
+            -Dsonar.organization=react-express
             -Dsonar.sources=.
             -Dsonar.exclusions=node_modules/**,tests/**
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
