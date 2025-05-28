@@ -163,7 +163,7 @@ jobs:
             -d "$ISSUE_BODY"
 
   sonarqube-backend-analysis:
-    name: SonarQube Scan
+    name: SonarQube Scan to Backend
     runs-on: ubuntu-latest
     needs: [unit-tests]
 
@@ -215,7 +215,7 @@ jobs:
           fi
 
   sonarqube-fronend-analysis:
-    name: SonarQube Scan
+    name: SonarQube Scan to Frontend
     runs-on: ubuntu-latest
     needs: [unit-tests]
 
