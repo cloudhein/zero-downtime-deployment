@@ -2,7 +2,7 @@
 
 ##  CI/CD HLD of the project
 
-![alt text](./images/cicd_workflow.png)
+![alt text](./images/cicd_workflow_updates.png)
 
 ## HA,Fault Tolerance & Zero Downtime Deployment Architecture on AWS LLD
 
@@ -18,9 +18,13 @@
 
 - **Ensured fault-tolerant architecture by distributing workloads across Availability Zones.**
 
+- **Implement white box testing to find security vulnerabiltites and code quality check**
+
 - **Streamlined deployment by containerizing frontend and backend, improving speed and consistency.**
 
 - **Built secure and efficient containers using rootless mode, multi-stage builds, and image optimization techniques.**
+
+- **Scanning the container images with security scanner to find critical vulnerabilities before pushing to private registry**
 
 - **Containerized & push to private container registry and pull the image from it**
 
