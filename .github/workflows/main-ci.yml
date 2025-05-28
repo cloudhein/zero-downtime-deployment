@@ -211,50 +211,14 @@ jobs:
 
           QUALITY_GATE_STATUS=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=react-express-key" | jq -r '.projectStatus.status')
           echo "Quality Gate Status: $QUALITY_GATE_STATUS"
-          echo "quality_gate_status=$QUALITY_GATE_STATUS" >> "$GITHUB_STEP_OUTPUTS"
-
+          #echo "quality_gate_status=$QUALITY_GATE_STATUS" >> $GITHUB_OUTPUT
+        
           if [ "$QUALITY_GATE_STATUS" != "OK" ]; then
             echo "❌ Quality Gate failed"
             exit 1
           else
             echo "✅ Quality Gate passed"
           fi
-
-      - name: Create GitHub Issue on Quality Gate Failure
-        if: steps.qualitygate.outputs.quality_gate_status != 'OK'
-
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
-          ACTOR: ${{ github.actor }}
-          EVENT_NAME: ${{ github.event_name }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_USER: ${{ github.event.pull_request.user.login }}
-          PR_TIMESTAMP: ${{ github.event.pull_request.updated_at }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          COMMIT_TIMESTAMP: ${{ github.event.head_commit.timestamp }}
-        run: |
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            COMMIT_INFO="**PR Title:** $PR_TITLE\n\n**PR Author:** $PR_USER\n\n**Timestamp:** $PR_TIMESTAMP"
-          else
-            COMMIT_INFO="**Commit Message:** $COMMIT_MESSAGE\n\n**Timestamp:** $COMMIT_TIMESTAMP"
-          fi
-
-          ISSUE_BODY=$(cat <<EOF
-          {
-            "title": "🚨 SonarQube Quality Gate Failed",
-            "body": "**Author:** $ACTOR\n\n**Commit SHA:** $SHA\n\n**Event Type:** $EVENT_NAME\n\n$COMMIT_INFO\n\n**Run URL:** $RUN_URL\n\nSonarQube Quality Gate has failed. Please address the issues in the code analysis report."
-          }
-          EOF
-          )
-
-          curl -X POST \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/$REPO/issues \
-            -d "$ISSUE_BODY"
 
   containerize-backend:
     runs-on: ubuntu-latest
