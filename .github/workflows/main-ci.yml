@@ -211,7 +211,7 @@ jobs:
 
           QUALITY_GATE_STATUS=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=react-express-key" | jq -r '.projectStatus.status')
           echo "Quality Gate Status: $QUALITY_GATE_STATUS"
-          echo "quality_gate_status=$QUALITY_GATE_STATUS" >> $GITHUB_OUTPUT
+          echo "quality_gate_status=$QUALITY_GATE_STATUS" >> "$GITHUB_STEP_OUTPUTS"
 
           if [ "$QUALITY_GATE_STATUS" != "OK" ]; then
             echo "❌ Quality Gate failed"
