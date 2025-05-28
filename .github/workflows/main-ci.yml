@@ -268,7 +268,7 @@ jobs:
 
   containerize-backend:
     runs-on: ubuntu-latest
-    needs: [format_code,repo-meta,sonarqube-backend-analysis,sonarqube-fronend-analysis]
+    needs: [repo-meta,sonarqube-backend-analysis]
 
     steps:
       - name: Checkout code
