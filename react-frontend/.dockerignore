@@ -11,3 +11,5 @@ tests
 coverage
 *.test.js
 *.test.ts
+
+README.md
