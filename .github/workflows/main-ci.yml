@@ -302,13 +302,18 @@ jobs:
           scanners: 'vuln,secret'
 
       - name: Push Docker images
+        # Only push if the scan was successful
         if: steps.trivy-scan.outcome == 'success'
-        uses: docker/build-push-action@v6.15.0
-        with:
-          context: ./express-backend
-          file: ./express-backend/Dockerfile
-          push: true
-          tags: docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }}
+        run: docker push docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }}
+
+      # - name: Push Docker images
+      #   if: steps.trivy-scan.outcome == 'success'
+      #   uses: docker/build-push-action@v6.15.0
+      #   with:
+      #     context: ./express-backend
+      #     file: ./express-backend/Dockerfile
+      #     push: true
+      #     tags: docker.io/${{ vars.DOCKERHUB_USERNAME }}/express-backend:${{ needs.repo-meta.outputs.image_name }}
 
 
   containerize-frontend:
@@ -351,15 +356,20 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
           scanners: 'vuln,secret'
-
-      - name: Build and push Docker images
+      
+      - name: Push Docker images
+        # Only push if the scan was successful
         if: steps.trivy-scan.outcome == 'success'
-        uses: docker/build-push-action@v6.15.0
-        with:
-          context: ./react-frontend/
-          file: ./react-frontend//Dockerfile
-          push: true
-          tags: docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend:${{ needs.repo-meta.outputs.image_name }}
+        run: docker push docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend:${{ needs.repo-meta.outputs.image_name }}
+
+      # - name: Push Docker images
+      #   if: steps.trivy-scan.outcome == 'success'
+      #   uses: docker/build-push-action@v6.15.0
+      #   with:
+      #     context: ./react-frontend/
+      #     file: ./react-frontend//Dockerfile
+      #     push: true
+      #     tags: docker.io/${{ vars.DOCKERHUB_USERNAME }}/react-frontend:${{ needs.repo-meta.outputs.image_name }}
 
 
   
