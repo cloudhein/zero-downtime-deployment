@@ -312,7 +312,7 @@ jobs:
     outputs:
       backend_lb_dns_name: ${{ steps.extract_lb.outputs.backend_lb_dns_name }}
  
-    needs: [format_code,containerize-backend,repo-meta]
+    needs: [containerize-backend]
  
     steps:
       - name: Checkout code
@@ -356,7 +356,7 @@ jobs:
     env:
       backend_ip: ${{ needs.deploy-backend-app.outputs.backend_lb_dns_name }}
 
-    needs: [format_code,repo-meta,sonarqube-backend-analysis,sonarqube-fronend-analysis,containerize-backend]
+    needs: [repo-meta,deploy-backend-app]
 
     steps:
       - name: Checkout code
