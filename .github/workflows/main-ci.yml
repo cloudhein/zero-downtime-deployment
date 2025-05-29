@@ -3,7 +3,7 @@ name: react-app-express-js-ci-cd-main-branch
 on:
   push:
     branches:
-      - main
+      - feature
 
 env:
   NODE-VERSION: 20
