@@ -36,12 +36,12 @@ resource "aws_lb_target_group" "backend_tg" {
 
   health_check {
     enabled             = true
-    interval            = 20 # healthy threshold interval
+    interval            = 25 # healthy threshold interval
     path                = "/api/v1/hello"
     port                = "3000"
     protocol            = "HTTP"
     healthy_threshold   = 2
-    unhealthy_threshold = 8
+    unhealthy_threshold = 10
     timeout             = 15 # unhealthy threshold interval
     matcher             = "200"
   }

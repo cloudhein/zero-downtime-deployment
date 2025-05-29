@@ -36,7 +36,7 @@ resource "aws_lb_target_group" "frontend_tg" {
 
   health_check {
     enabled  = true
-    interval = 20 # healthy threshold interval
+    interval = 25 # healthy threshold interval
     path     = "/"
     port     = "80"
     #protocol            = "HTTP"
