@@ -7,7 +7,7 @@ on:
 
 env:
   NODE-VERSION: 20
-  AWS_REGION: ap-northeast-1
+  AWS_REGION: ap-southeast-1 # Change to your desired AWS region
 
 jobs:
   repo-meta:
