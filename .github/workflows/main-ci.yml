@@ -287,7 +287,9 @@ jobs:
       # if use with uses in github action, working-directory cannot define and must use with context
        # Build image locally, but don't push yet
       - name: Build Docker image (local only)
-        run: docker build -t ${{ vars.JFROG_REGISTRY }}/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }} ./express-backend
+        run: |
+          echo "IMAGE_TAG='${{ needs.repo-meta.outputs.image_name }}'"
+          docker build -t "${{ vars.JFROG_REGISTRY }}/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}" ./express-backend
         
       - name: Scan image in a private registry
         id: trivy-scan
@@ -304,7 +306,7 @@ jobs:
       - name: Push Docker images
         # Only push if the scan was successful
         if: steps.trivy-scan.outcome == 'success'
-        run: docker push ${{ vars.JFROG_REGISTRY }}/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}
+        run: docker push "${{ vars.JFROG_REGISTRY }}/expressjs-backend/express:${{ needs.repo-meta.outputs.image_name }}"
 
    # deploy backend app
   deploy-backend-app:
@@ -379,7 +381,9 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image (local only)
-        run: docker build -t ${{ vars.JFROG_REGISTRY }}/react-frontend/react:${{ needs.repo-meta.outputs.image_name }} ./react-frontend/
+        run: |
+          echo "IMAGE_TAG='${{ needs.repo-meta.outputs.image_name }}'"
+          docker build -t "${{ vars.JFROG_REGISTRY }}/react-frontend/react:${{ needs.repo-meta.outputs.image_name }}" ./react-frontend/
 
       - name: Scan image in a private registry
         id: trivy-scan
@@ -396,7 +400,7 @@ jobs:
       - name: Push Docker images
         # Only push if the scan was successful
         if: steps.trivy-scan.outcome == 'success'
-        run: docker push ${{ vars.JFROG_REGISTRY }}/react-frontend/react:${{ needs.repo-meta.outputs.image_name }}
+        run: docker push "${{ vars.JFROG_REGISTRY }}/react-frontend/react:${{ needs.repo-meta.outputs.image_name }}"
 
   deploy-frontend-app:
     runs-on: ubuntu-latest
